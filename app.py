@@ -26,7 +26,25 @@ st.set_page_config(
 
 # Sidebar Configuration (Placed first to initialize llm_config before any LLM calls)
 st.sidebar.markdown("<h2 style='color: var(--text-color); font-size: 1.4rem; margin-top: 10px; font-family: \"EB Garamond\", serif;'>🤖 LLM Engine</h2>", unsafe_allow_html=True)
-llm_provider = st.sidebar.selectbox("LLM Provider", ["Ollama (Local)", "Anthropic Claude API", "OpenAI GPT API"], key="llm_provider_select")
+
+# Dynamically check if local Ollama is available
+import urllib.request
+@st.cache_resource(ttl=60)
+def is_ollama_available():
+    try:
+        with urllib.request.urlopen("http://localhost:11434/", timeout=1) as response:
+            return response.status == 200
+    except Exception:
+        return False
+
+# Prioritize provider based on Ollama availability
+ollama_active = is_ollama_available()
+if ollama_active:
+    provider_options = ["Ollama (Local)", "OpenAI GPT API", "Anthropic Claude API"]
+else:
+    provider_options = ["OpenAI GPT API", "Anthropic Claude API", "Ollama (Local)"]
+
+llm_provider = st.sidebar.selectbox("LLM Provider", provider_options, key="llm_provider_select")
 
 llm_model = "llama3.2"
 api_key = ""
@@ -290,11 +308,16 @@ def process_resume(file_bytes, file_name):
 
 # Cached Resume Insights Generation
 @st.cache_resource
-def generate_resume_insights(_chunks_list):
+def generate_resume_insights(_chunks_list, provider, model, api_key):
+    config = {
+        "provider": provider,
+        "model": model,
+        "api_key": api_key
+    }
     context = "\n".join([c.page_content for c in _chunks_list[:4]])
-    summary = generate_answer(context, "Give me a concise 3-sentence professional summary of this candidate's background and experience.")
-    skills = generate_answer(context, "Extract the key technical and soft skills mentioned in this resume as a simple comma-separated list.")
-    experience = generate_answer(context, "Summarize the candidate's work history, including notable job roles, companies, and durations in brief bullet points.")
+    summary = generate_answer(context, "Give me a concise 3-sentence professional summary of this candidate's background and experience.", config=config)
+    skills = generate_answer(context, "Extract the key technical and soft skills mentioned in this resume as a simple comma-separated list.", config=config)
+    experience = generate_answer(context, "Summarize the candidate's work history, including notable job roles, companies, and durations in brief bullet points.", config=config)
     return summary, skills, experience
 
 # Multi-file Uploader Card
@@ -358,7 +381,12 @@ if uploaded_files:
         with tabs[1]:
             st.markdown("<h3 style='font-size: 1.35rem; margin-top: 15px;'>Highlights Candidate Profile</h3>", unsafe_allow_html=True)
             with st.spinner("Generating insights..."):
-                summary, skills_extracted, experience_summary = generate_resume_insights(all_chunks)
+                summary, skills_extracted, experience_summary = generate_resume_insights(
+                    all_chunks,
+                    st.session_state.llm_config["provider"],
+                    st.session_state.llm_config["model"],
+                    st.session_state.llm_config["api_key"]
+                )
                 
             # Executive Summary card
             st.markdown(f"""
@@ -604,7 +632,12 @@ if uploaded_files:
                         
                         # Get summary & ATS score
                         ats_results = run_ats_match(full_text, recruiter_jd)
-                        candidate_summary, _, _ = generate_resume_insights(chunks)
+                        candidate_summary, _, _ = generate_resume_insights(
+                            chunks,
+                            st.session_state.llm_config["provider"],
+                            st.session_state.llm_config["model"],
+                            st.session_state.llm_config["api_key"]
+                        )
                         
                         name_match = re.search(r"^[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+", full_text)
                         candidate_name = name_match.group(0) if name_match else file.name.replace(".pdf", "")
