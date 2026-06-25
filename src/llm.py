@@ -45,15 +45,14 @@ def generate_answer(context, query, config=None):
             
         elif "gemini" in provider.lower():
             # pyrefly: ignore [missing-import]
-            from langchain_openai import ChatOpenAI
+            from langchain_google_genai import ChatGoogleGenerativeAI
             # Fallback to st.secrets if api_key is empty
             active_key = api_key if api_key else st.secrets.get("GEMINI_API_KEY", "")
             if not active_key:
                 return "⚠️ Gemini API key is missing. Please create a free key in Google AI Studio and provide it in the sidebar settings or secrets."
-            llm = ChatOpenAI(
+            llm = ChatGoogleGenerativeAI(
                 model=model,
-                openai_api_key=active_key,
-                base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
+                google_api_key=active_key
             )
             response = llm.invoke(prompt)
             return response.content
