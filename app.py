@@ -332,11 +332,15 @@ if uploaded_files:
         uploaded_file = uploaded_files[0]
         file_bytes = uploaded_file.getvalue()
         
-        with st.spinner("⚡ Parsing resume layout & building local FAISS index..."):
-            vector_store, all_chunks = process_resume(file_bytes, uploaded_file.name)
-            resume_text = "\n".join([chunk.page_content for chunk in all_chunks])
-            
-        st.toast("✅ Resume successfully indexed!", icon="✨")
+        try:
+            with st.spinner("⚡ Parsing resume layout & building local FAISS index..."):
+                vector_store, all_chunks = process_resume(file_bytes, uploaded_file.name)
+                resume_text = "\n".join([chunk.page_content for chunk in all_chunks])
+            st.toast("✅ Resume successfully indexed!", icon="✨")
+        except Exception as e:
+            st.error(f"❌ Failed to parse PDF resume: {str(e)}")
+            st.info("💡 Please make sure the file is a valid, readable PDF document.")
+            st.stop()
         
         # Setup layout Tabs
         tabs = st.tabs([
@@ -629,29 +633,32 @@ if uploaded_files:
                 for idx, file in enumerate(uploaded_files):
                     file_bytes = file.getvalue()
                     # Process and index
-                    with st.spinner(f"Processing candidate ({idx+1}/{len(uploaded_files)}): {file.name}..."):
-                        _, chunks = process_resume(file_bytes, file.name)
-                        full_text = "\n".join([c.page_content for c in chunks])
-                        
-                        # Get summary & ATS score
-                        ats_results = run_ats_match(full_text, recruiter_jd)
-                        candidate_summary, _, _ = generate_resume_insights(
-                            chunks,
-                            st.session_state.llm_config["provider"],
-                            st.session_state.llm_config["model"],
-                            st.session_state.llm_config["api_key"]
-                        )
-                        
-                        name_match = re.search(r"^[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+", full_text)
-                        candidate_name = name_match.group(0) if name_match else file.name.replace(".pdf", "")
-                        
-                        leaderboard.append({
-                            "name": candidate_name,
-                            "filename": file.name,
-                            "score": ats_results["score"],
-                            "matching_skills": ats_results["matching_skills"][:5],
-                            "summary": candidate_summary
-                        })
+                    try:
+                        with st.spinner(f"Processing candidate ({idx+1}/{len(uploaded_files)}): {file.name}..."):
+                            _, chunks = process_resume(file_bytes, file.name)
+                            full_text = "\n".join([c.page_content for c in chunks])
+                            
+                            # Get summary & ATS score
+                            ats_results = run_ats_match(full_text, recruiter_jd)
+                            candidate_summary, _, _ = generate_resume_insights(
+                                chunks,
+                                st.session_state.llm_config["provider"],
+                                st.session_state.llm_config["model"],
+                                st.session_state.llm_config["api_key"]
+                            )
+                            
+                            name_match = re.search(r"^[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+", full_text)
+                            candidate_name = name_match.group(0) if name_match else file.name.replace(".pdf", "")
+                            
+                            leaderboard.append({
+                                "name": candidate_name,
+                                "filename": file.name,
+                                "score": ats_results["score"],
+                                "matching_skills": ats_results["matching_skills"][:5],
+                                "summary": candidate_summary
+                            })
+                    except Exception as e:
+                        st.error(f"❌ Error processing candidate {file.name}: {str(e)}")
                     progress_bar.progress((idx + 1) / len(uploaded_files))
                 
                 # Sort leaderboard by score descending

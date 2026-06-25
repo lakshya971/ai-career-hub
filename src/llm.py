@@ -64,4 +64,14 @@ def generate_answer(context, query, config=None):
             return response
             
     except Exception as e:
-        return f"⚠️ Error generating answer from {provider} ({model}): {str(e)}"
+        error_msg = str(e)
+        if "insufficient_quota" in error_msg or "429" in error_msg:
+            return f"⚠️ API quota exceeded for {provider}. Please verify your billing balance at platform.openai.com/settings/billing or switch to the Google Gemini API (Free) or local Ollama."
+        elif "connection refused" in error_msg.lower() or "failed to establish a new connection" in error_msg.lower() or "connectionerror" in error_msg.lower():
+            return f"⚠️ Local Ollama service is not running. Please make sure the Ollama desktop app is running on your machine, or switch to a Cloud API provider (Gemini/OpenAI) in the sidebar."
+        elif "api_key" in error_msg.lower() or "unauthorized" in error_msg.lower() or "401" in error_msg:
+            return f"⚠️ Invalid API key for {provider}. Please check the key configuration in the sidebar settings or secrets."
+        elif "not_found" in error_msg.lower() or "404" in error_msg:
+            return f"⚠️ Model not found or unavailable for {provider} ({model}). Please verify model availability or check if your API key has access."
+        else:
+            return f"⚠️ Error generating answer from {provider} ({model}): {error_msg}"
