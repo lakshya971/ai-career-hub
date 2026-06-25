@@ -258,27 +258,33 @@ st.markdown("""
         height: 120px;
         border-radius: 50%;
         background: conic-gradient(#cc785c var(--value), rgba(128, 128, 128, 0.2) 0deg); /* Coral & Hairline border */
-        display: flex;
-        align-items: center;
-        justify-content: center;
         position: relative;
     }
     .score-circle::before {
         content: "";
         position: absolute;
+        top: 8px;
+        left: 8px;
         width: 104px;
         height: 104px;
         border-radius: 50%;
-        background: var(--background-color);
+        background: var(--background-color) !important;
         z-index: 1 !important;
     }
     .score-text {
         position: absolute;
-        font-size: 2.2rem;
-        font-weight: 400;
-        color: #cc785c;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        margin: 0 !important;
+        padding: 0 !important;
+        font-size: 2.2rem !important;
+        font-weight: 400 !important;
+        color: #cc785c !important;
         font-family: 'EB Garamond', serif !important;
         z-index: 2 !important;
+        text-align: center;
+        line-height: 1 !important;
     }
     
     /* Dynamic Info snippet card */
