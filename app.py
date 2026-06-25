@@ -268,7 +268,7 @@ st.markdown("""
         width: 104px;
         height: 104px;
         border-radius: 50%;
-        background: var(--background-color) !important;
+        background: var(--background-color, #faf9f5) !important;
         z-index: 1 !important;
     }
     .score-text {
@@ -278,10 +278,10 @@ st.markdown("""
         transform: translate(-50%, -50%);
         margin: 0 !important;
         padding: 0 !important;
-        font-size: 2.2rem !important;
-        font-weight: 400 !important;
-        color: #cc785c !important;
-        font-family: 'EB Garamond', serif !important;
+        font-size: 2rem !important;
+        font-weight: 600 !important;
+        color: var(--text-color, #141413) !important;
+        font-family: 'Inter', sans-serif !important;
         z-index: 2 !important;
         text-align: center;
         line-height: 1 !important;
