@@ -270,6 +270,7 @@ st.markdown("""
         height: 104px;
         border-radius: 50%;
         background: var(--background-color);
+        z-index: 1 !important;
     }
     .score-text {
         position: absolute;
@@ -277,6 +278,7 @@ st.markdown("""
         font-weight: 400;
         color: #cc785c;
         font-family: 'EB Garamond', serif !important;
+        z-index: 2 !important;
     }
     
     /* Dynamic Info snippet card */
@@ -458,15 +460,15 @@ if uploaded_files:
                     with col2:
                         st.markdown("##### Matching Skills")
                         if ats_results["matching_skills"]:
-                            for s in ats_results["matching_skills"]:
-                                st.markdown(f"<span class='badge badge-teal'>{s}</span>", unsafe_allow_html=True)
+                            badges_html = "".join([f"<span class='badge badge-teal'>{s}</span>" for s in ats_results["matching_skills"]])
+                            st.markdown(f"<div>{badges_html}</div>", unsafe_allow_html=True)
                         else:
                             st.write("No direct skill matches found.")
                             
                         st.markdown("##### Missing Competencies")
                         if ats_results["missing_skills"]:
-                            for s in ats_results["missing_skills"]:
-                                st.markdown(f"<span class='badge badge-coral'>{s}</span>", unsafe_allow_html=True)
+                            badges_html = "".join([f"<span class='badge badge-coral'>{s}</span>" for s in ats_results["missing_skills"]])
+                            st.markdown(f"<div>{badges_html}</div>", unsafe_allow_html=True)
                         else:
                             st.write("Excellent keyword alignment!")
                     
@@ -680,8 +682,8 @@ if uploaded_files:
                     """, unsafe_allow_html=True)
                     
                     if cand["matching_skills"]:
-                        for s in cand["matching_skills"]:
-                            st.markdown(f"<span class='badge badge-teal'>{s}</span>", unsafe_allow_html=True)
+                        badges_html = "".join([f"<span class='badge badge-teal'>{s}</span>" for s in cand["matching_skills"]])
+                        st.markdown(f"<div>{badges_html}</div>", unsafe_allow_html=True)
                     else:
                         st.write("No matching skills extracted.")
                     st.markdown("</div></div>", unsafe_allow_html=True)
