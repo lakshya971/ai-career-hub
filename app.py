@@ -52,7 +52,7 @@ api_key = ""
 if llm_provider == "Ollama (Local)":
     llm_model = st.sidebar.selectbox("Ollama Model", ["llama3.2", "llama3"], key="ollama_model_select")
 elif llm_provider == "Google Gemini API (Free)":
-    llm_model = st.sidebar.selectbox("Gemini Model", ["gemini-1.5-flash", "gemini-1.5-pro"], key="gemini_model_select")
+    llm_model = st.sidebar.selectbox("Gemini Model", ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-3.5-flash"], key="gemini_model_select")
     api_key = st.sidebar.text_input("Gemini API Key", type="password", placeholder="Pulls from secrets if blank", key="gemini_key_input")
 elif llm_provider == "Anthropic Claude API":
     llm_model = st.sidebar.selectbox("Claude Model", ["claude-3-5-sonnet-20241022", "claude-3-haiku-20240307"], key="claude_model_select")
