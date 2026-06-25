@@ -7,3 +7,4 @@ pypdf
 sentence-transformers
 langchain-openai
 langchain-anthropic
+langchain-google-genai
